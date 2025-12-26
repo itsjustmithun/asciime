@@ -230,7 +230,17 @@ export function useAny2Ascii(
     // Allocate storage for the video texture ONCE
     gl.bindTexture(gl.TEXTURE_2D, videoTextureRef.current);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, mediaWidth, mediaHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    
+    // Mipmaps only needed for videos (scaling). Images/GIFs: fixed resolution = no mipmaps
+    if (mediaType === "video") {
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      needsMipmapUpdateRef.current = true;
+    } else {
+      // Images/GIFs: bilinear filtering is identical for fixed-scale sampling
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      needsMipmapUpdateRef.current = false;
+    }
+    
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -310,8 +320,9 @@ export function useAny2Ascii(
     // Use texSubImage2D for faster texture updates
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, mediaElement);
     
-    // Generate mipmaps only when needed (e.g., on first load or resize)
-    if (needsMipmapUpdateRef.current) {
+    // Generate mipmaps only for videos when needed (e.g., on first load or resize)
+    // Images/GIFs don't need mipmaps since they're rendered at fixed scale
+    if (mediaType === "video" && needsMipmapUpdateRef.current) {
       gl.generateMipmap(gl.TEXTURE_2D);
       needsMipmapUpdateRef.current = false;
     }
@@ -372,7 +383,8 @@ export function useAny2Ascii(
     // Use texSubImage2D for faster texture updates
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-    // Generate mipmaps only when needed
+    // Images don't need mipmaps since they're rendered at fixed scale
+    // Mipmap generation is only needed for videos when scaling is involved
     if (needsMipmapUpdateRef.current) {
       gl.generateMipmap(gl.TEXTURE_2D);
       needsMipmapUpdateRef.current = false;

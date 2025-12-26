@@ -1,7 +1,7 @@
 {
   "name": "any2ascii",
-  "version": "1.0.2",
-  "description": "Turn images/videos to ASCII using WebGL",
+  "version": "1.0.3",
+  "description": "Stream any image/video to ASCII using WebGL",
   "author": "Mithun Ramesh",
   "license": "MIT",
   "repository": {
@@ -51,7 +51,7 @@
     "react": "^18",
     "react-dom": "^18",
     "semantic-release": "^25.0.2",
-    "tsup": "^8",
+    "tsup": "^8.5.1",
     "typescript": "^5"
   }
 }
